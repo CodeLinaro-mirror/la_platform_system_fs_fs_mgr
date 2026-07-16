@@ -29,5 +29,7 @@ bool CanUseUserspaceSnapshots();
 
 bool InitializeUringForMerge(struct io_uring* ring, int queue_depth);
 
+int AdjustWorkerCountForCpu(int configured_workers, long num_cpus);
+
 }  // namespace snapshot
 }  // namespace android

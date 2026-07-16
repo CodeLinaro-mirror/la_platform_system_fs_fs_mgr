@@ -121,5 +121,12 @@ bool InitializeUringForMerge(struct io_uring* ring, int queue_depth) {
     return true;
 }
 
+int AdjustWorkerCountForCpu(int configured_workers, long num_cpus) {
+    if (num_cpus <= 0) {
+        return 1;
+    }
+    return std::min(static_cast<long>(configured_workers), num_cpus);
+}
+
 }  // namespace snapshot
 }  // namespace android

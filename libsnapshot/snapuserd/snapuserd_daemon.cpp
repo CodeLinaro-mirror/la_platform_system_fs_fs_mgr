@@ -23,7 +23,9 @@
 #include <storage_literals/storage_literals.h>
 #include "android-base/file.h"
 
+#include <unistd.h>
 #include "snapuserd_daemon.h"
+#include "utility.h"
 
 using namespace android::storage_literals;
 
@@ -216,6 +218,19 @@ bool Daemon::StartServerForUserspaceSnapshots(int arg_start, int argc, char** ar
         socket_ = FLAGS_fd_num;
         user_server_.SetUeventHelper(uevent_helper);
     }
+
+    if (FLAGS_ublk) {
+        long num_cpus = sysconf(_SC_NPROCESSORS_CONF);
+        if (num_cpus <= 0) {
+            LOG(WARNING) << "sysconf failed, defaulting UBLK worker count to 1";
+        }
+        int new_worker_count = AdjustWorkerCountForCpu(FLAGS_worker_count, num_cpus);
+        if (num_cpus > 0 && new_worker_count < FLAGS_worker_count) {
+            LOG(INFO) << "Capping UBLK worker count to " << new_worker_count << " (possible CPUs)";
+        }
+        FLAGS_worker_count = new_worker_count;
+    }
+
     for (int i = arg_start; i < argc; i++) {
         auto parts = android::base::Split(argv[i], ",");
         if (parts.size() != 4) {
