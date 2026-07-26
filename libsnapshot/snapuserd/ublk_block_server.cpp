@@ -181,7 +181,9 @@ bool UblkBlockServer::ProcessRequests() {
     // So first time ProcessRequests() is called, create the queue before proceeding.
     // TODOUBLK: b/414812023, can use q_ itself as indicator instead of explicit bool
     if (!q_inited_) {
-        Initialize();
+        if (!Initialize()) {
+            return false;
+        }
     }
     // All we need is ublk_process_io call. This will call
     // handle_io_async() ops.

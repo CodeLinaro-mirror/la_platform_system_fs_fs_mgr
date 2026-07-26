@@ -1594,6 +1594,19 @@ INSTANTIATE_TEST_SUITE_P(Io, HandlerTestV3, ::testing::ValuesIn(GetVariableBlock
 INSTANTIATE_TEST_SUITE_P(Io, SnapuserdTest, ::testing::ValuesIn(GetTestConfigs()));
 INSTANTIATE_TEST_SUITE_P(Io, HandlerTest, ::testing::ValuesIn(GetTestConfigs()));
 
+TEST(SnapuserdUtilTest, AdjustWorkerCountForCpu) {
+    // Case 1: sysconf failed (cpus <= 0) -> should default to 1
+    EXPECT_EQ(AdjustWorkerCountForCpu(4, 0), 1);
+    EXPECT_EQ(AdjustWorkerCountForCpu(4, -1), 1);
+    // Case 2: CPU count is low -> should cap to cpu count
+    EXPECT_EQ(AdjustWorkerCountForCpu(4, 3), 3);
+    EXPECT_EQ(AdjustWorkerCountForCpu(4, 2), 2);
+    EXPECT_EQ(AdjustWorkerCountForCpu(4, 1), 1);
+    // Case 3: CPU count is healthy -> should use configured workers
+    EXPECT_EQ(AdjustWorkerCountForCpu(4, 4), 4);
+    EXPECT_EQ(AdjustWorkerCountForCpu(4, 8), 4);
+}
+
 }  // namespace snapshot
 }  // namespace android
 
